@@ -208,6 +208,9 @@
   .boxes input.c-yellow{
     color:#8a6d1f; background:#faf0c4; border-color:#d6b23f; caret-color:#8a6d1f;
   }
+  .boxes input.c-black{
+    color:#111111; background:#333333; border-color:#111111; caret-color:#111111;
+  }
   .boxes input:focus{
     transform:translateY(-2px);
     box-shadow:0 4px 10px -2px rgba(0,0,0,0.35);
@@ -392,7 +395,7 @@ if (!CONFIG.IMAGE_SRC && !CONFIG.AUDIO_SRC) {
 }
 
 // Construction des cases
-const BOX_COLORS = ['c-green', 'c-blue', 'c-red', 'c-yellow'];
+const BOX_COLORS = ['c-red', 'c-black', 'c-green', 'c-blue'];
 const inputs = [];
 for (let i = 0; i < CONFIG.LENGTH; i++) {
   const inp = document.createElement('input');
