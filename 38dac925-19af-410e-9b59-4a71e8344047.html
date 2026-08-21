@@ -551,26 +551,6 @@ async function checkGroup(g) {
   }
 
   groupSolved[g] = false;
-
-  if ((hashes.minus && hash === hashes.minus) || (hashes.plus && hash === hashes.plus)) {
-    // Erreur de ±1 : indice ciblé, pas d'effacement ni de tremblement
-    groupEls[g].root.classList.add('near');
-    hintEl.textContent = CONFIG.NEAR_MISS_MESSAGE.replace('{label}', CONFIG.GROUPS[g].label.toLowerCase());
-    hintEl.className = 'error';
-    ledEl.className = 'led error';
-  } else {
-    // Erreur franche : on efface ce groupe
-    ledEl.className = 'led error';
-    shakeGroup(g);
-    hintEl.textContent = 'Code incorrect';
-    hintEl.className = 'error';
-    setTimeout(() => {
-      a.value = '';
-      b.value = '';
-      a.focus();
-      if (!allSolved()) resetHint();
-    }, 550);
-  }
 }
 
 inputs.forEach((inp, idx) => {
