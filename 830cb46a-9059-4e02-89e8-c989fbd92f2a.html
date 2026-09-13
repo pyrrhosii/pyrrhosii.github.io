@@ -178,7 +178,7 @@
 
   .groups{
     display:flex;
-    gap:20px;
+    gap:10px;
     justify-content:center;
     margin-bottom:6px;
     flex-wrap:wrap;
@@ -190,19 +190,19 @@
   }
   .group-boxes{
     display:flex;
-    gap:6px;
+    gap:4px;
   }
   .group-boxes input{
-    width:38px;
-    height:50px;
+    width:28px;
+    height:44px;
     text-align:center;
-    font-size:19px;
+    font-size:16px;
     font-weight:700;
     font-family:inherit;
     color:var(--amber);
     background:var(--bg-0);
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:7px;
     outline:none;
     caret-color:var(--amber);
     transition:border-color .15s, box-shadow .15s;
@@ -211,10 +211,6 @@
     border-color:var(--amber);
     box-shadow:0 0 0 3px rgba(232,163,61,0.15);
   }
-  .group.near .group-boxes input{
-    border-color:#d6b23f;
-    box-shadow:0 0 0 3px rgba(214,178,63,0.18);
-  }
   .group.solved .group-boxes input{
     border-color:#3fae62;
     color:#3fae62;
@@ -222,23 +218,17 @@
   }
   .group-boxes.shake{ animation:shake .4s; }
 
-  .parchment{
-    margin-top:10px;
-    padding:6px 9px;
-    max-width:92px;
-    font-family:Georgia, 'Times New Roman', serif;
-    font-style:italic;
-    font-size:11px;
-    line-height:1.3;
-    text-align:center;
-    color:#3b2a18;
-    background:linear-gradient(160deg, #e8d9b5, #cdb37f);
-    clip-path: polygon(4% 12%, 22% 2%, 46% 8%, 72% 1%, 96% 10%, 100% 32%, 93% 54%, 100% 76%, 89% 99%, 60% 92%, 31% 100%, 7% 90%, 11% 60%, 0% 34%);
-    box-shadow:0 3px 6px rgba(0,0,0,0.35);
+  .date-sep{
+    align-self:flex-start;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    font-weight:700;
+    color:var(--ink-dim);
+    padding:0 1px;
   }
-  .group:nth-child(1) .parchment{ transform:rotate(-3deg); }
-  .group:nth-child(2) .parchment{ transform:rotate(2deg); }
-  .group:nth-child(3) .parchment{ transform:rotate(-1.5deg); }
 
   @keyframes shake{
     10%,90%{ transform:translateX(-1px); }
@@ -331,13 +321,13 @@
    ============================================================ */
 const CONFIG = {
   // La question / consigne affichée au-dessus des cases
-  QUESTION: "Quel est le mot de passe ?",
+  QUESTION: "Quelle est la date ?",
 
-  // Texte d'aide affiché sous les fioles (placeholder), tant qu'aucune
+  // Texte d'aide affiché sous les cases (placeholder), tant qu'aucune
   // erreur n'a eu lieu
-  PLACEHOLDER: "Entrez la quantité de chaque sel",
+  PLACEHOLDER: "Entrez la date complète",
 
-  // Photo servant d'indice, affichée entre la question et les fioles.
+  // Photo servant d'indice, affichée entre la question et les cases.
   // Chemin relatif vers un fichier placé à côté de index.html sur
   // GitHub Pages (ex : "photo.jpg"). Laisser vide "" pour ne rien
   // afficher.
@@ -349,59 +339,31 @@ const CONFIG = {
   // rien afficher.
   AUDIO_SRC: "indice.mp3",
 
-  // Chaque case fait partie d'un groupe de 2 (une valeur à 2
-  // chiffres par groupe). Un groupe = un type de sel, avec son
-  // étiquette (parchemin) et la validation de sa propre valeur.
+  // Trois groupes de cases pour une date : Jour (2 chiffres), Mois
+  // (2 chiffres), Année (4 chiffres). "length" définit le nombre de
+  // cases du groupe. Un séparateur "/" est affiché automatiquement
+  // entre les groupes.
+  GROUPS: [
+    { label: "Jour",   length: 2 },
+    { label: "Mois",   length: 2 },
+    { label: "Année",  length: 4 }
+  ],
+
+  // Le code n'est jamais stocké en clair : on stocke le hash SHA-256
+  // de la date complète attendue, écrite en concaténant jour + mois
+  // + année sans séparateur (ex : "21101616" pour le 21/10/1616).
+  // Pour le générer : ouvrez la console du navigateur et tapez, par
+  // exemple pour cette date :
   //
-  // Le code n'est jamais stocké en clair. Pour chaque groupe, on
-  // stocke le hash SHA-256 de la valeur exacte attendue (2 chiffres,
-  // ex "07"), ainsi que le hash de la valeur juste en dessous
-  // (exact - 1) et juste au-dessus (exact + 1). Cela permet de
-  // détecter une erreur de ±1 sans jamais connaître ni afficher la
-  // vraie valeur. Laisser "minus" ou "plus" à null si la valeur
-  // exacte est 00 ou 99 (pas de voisin possible dans ce sens).
-  //
-  // Pour générer un hash, ouvrez la console du navigateur et tapez,
-  // par exemple pour la valeur "45" :
-  //
-  //   crypto.subtle.digest("SHA-256", new TextEncoder().encode("45"))
+  //   crypto.subtle.digest("SHA-256", new TextEncoder().encode("21101616"))
   //     .then(b => console.log([...new Uint8Array(b)]
   //       .map(x => x.toString(16).padStart(2,"0")).join("")))
   //
-  // Valeurs ci-dessous fournies à titre de démo (45 / 28 / 12) —
-  // remplacez-les par vos propres hashs.
-  GROUPS: [
-    {
-      label: "Sel grossier",
-      hashes: {
-        minus: "71ee45a3c0db9a9865f7313dd3372cf60dca6479d46261f3542eb9346e4a04d6",
-        exact: "811786ad1ae74adfdd20dd0372abaaebc6246e343aebd01da0bfc4c02bf0106c",
-        plus:  "25fc0e7096fc653718202dc30b0c580b8ab87eac11a700cba03a7c021bc35b0c"
-      }
-    },
-    {
-      label: "Sel intermédiaire",
-      hashes: {
-        minus: "670671cd97404156226e507973f2ab8330d3022ca96e0c93bdbdb320c41adcaf",
-        exact: "59e19706d51d39f66711c2653cd7eb1291c94d9b55eb14bda74ce4dc636d015a",
-        plus:  "35135aaa6cc23891b40cb3f378c53a17a1127210ce60e125ccf03efcfdaec458"
-      }
-    },
-    {
-      label: "Sel fin",
-      hashes: {
-        minus: "4fc82b26aecb47d2868c4efbe3581732a3e7cbcc6c2efb32062c08170a05eeb8",
-        exact: "6b51d431df5d7f141cbececcf79edf3dd861c3b4069f0b11661a3eefacbba918",
-        plus:  "3fdba35f04dc8c462986c992bcf875546257113072a909c162f7e470e581e278"
-      }
-    }
-  ],
+  // Valeur ci-dessous = hash de "21101616" (21 octobre 1616).
+  // Remplacez-la par le hash de votre propre date.
+  CODE_HASH: "7c24886aa632bbd83e8492303459f9bb63797d88afc484cd4c62d2facae901ad",
 
-  // Message affiché quand une valeur de groupe est à ±1 de la bonne
-  // réponse. "{label}" est remplacé par le nom du groupe concerné.
-  NEAR_MISS_MESSAGE: "Pesez à nouveau la fiole du {label}.",
-
-  // Message affiché une fois le bon code entré
+  // Message affiché une fois la bonne date entrée
   SUCCESS_MESSAGE: "Bienvenue.",
 
   // Si renseigné, redirige automatiquement vers cette URL après le
@@ -450,14 +412,20 @@ if (!CONFIG.IMAGE_SRC && !CONFIG.AUDIO_SRC) {
   clueEl.classList.add('empty');
 }
 
-// Construction des groupes (2 cases normales par groupe + étiquette
-// parchemin)
-const CHARS_PER_GROUP = 2;
-const groupInputs = []; // groupInputs[groupIndex] = [input0, input1]
-const groupSolved = CONFIG.GROUPS.map(() => false);
+// Construction des groupes (Jour / Mois / Année) avec séparateur "/"
+// entre chaque groupe, et étiquette parchemin sous chacun
+const groupInputs = []; // groupInputs[groupIndex] = [input0, input1, ...]
 let groupEls = []; // { root, boxesEl }
 
 CONFIG.GROUPS.forEach((group, g) => {
+  if (g > 0) {
+    const sep = document.createElement('div');
+    sep.className = 'date-sep';
+    sep.textContent = '/';
+    sep.setAttribute('aria-hidden', 'true');
+    groupsEl.appendChild(sep);
+  }
+
   const root = document.createElement('div');
   root.className = 'group';
 
@@ -465,7 +433,7 @@ CONFIG.GROUPS.forEach((group, g) => {
   boxes.className = 'group-boxes';
 
   const inputsForGroup = [];
-  for (let c = 0; c < CHARS_PER_GROUP; c++) {
+  for (let c = 0; c < group.length; c++) {
     const inp = document.createElement('input');
     inp.type = 'text';
     inp.inputMode = 'numeric';
@@ -480,25 +448,23 @@ CONFIG.GROUPS.forEach((group, g) => {
   root.appendChild(boxes);
   groupInputs.push(inputsForGroup);
 
-  if (group.label) {
-    const parchment = document.createElement('p');
-    parchment.className = 'parchment';
-    parchment.textContent = group.label;
-    root.appendChild(parchment);
-  }
-
   groupsEl.appendChild(root);
   groupEls.push({ root, boxesEl: boxes });
 });
 
 // Liste à plat, dans l'ordre, pour la navigation (tab automatique,
-// retour arrière, collage)
+// retour arrière, collage) et la validation
 const inputs = groupInputs.flat();
+const LENGTH = inputs.length;
 
 async function sha256Hex(text) {
   const data = new TextEncoder().encode(text);
   const digest = await crypto.subtle.digest('SHA-256', data);
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function currentCode() {
+  return inputs.map(i => i.value).join('');
 }
 
 function resetHint() {
@@ -507,83 +473,52 @@ function resetHint() {
   ledEl.className = 'led';
 }
 
-function shakeGroup(g) {
-  const el = groupEls[g].boxesEl;
-  el.classList.remove('shake');
-  void el.offsetWidth; // reflow pour rejouer l'animation
-  el.classList.add('shake');
+function shakeAll() {
+  groupEls.forEach(g => {
+    g.boxesEl.classList.remove('shake');
+    void g.boxesEl.offsetWidth; // reflow pour rejouer l'animation
+    g.boxesEl.classList.add('shake');
+  });
 }
 
-function clearGroupState(g) {
-  groupEls[g].root.classList.remove('near', 'solved');
-}
+async function tryValidate() {
+  const code = currentCode();
+  if (code.length < LENGTH) return;
 
-function allSolved() {
-  return groupSolved.every(Boolean);
-}
+  const hash = await sha256Hex(code);
 
-async function checkGroup(g) {
-  const [a, b] = groupInputs[g];
-  if (!a.value || !b.value) return; // groupe pas encore complet
-
-  const value = a.value + b.value;
-  const hash = await sha256Hex(value);
-  const hashes = CONFIG.GROUPS[g].hashes;
-
-  clearGroupState(g);
-
-  if (hash === hashes.exact) {
-    groupSolved[g] = true;
-    groupEls[g].root.classList.add('solved');
+  if (hash === CONFIG.CODE_HASH) {
+    groupEls.forEach(g => g.root.classList.add('solved'));
     ledEl.className = 'led active';
     hintEl.textContent = '';
-    hintEl.className = '';
-
-    if (allSolved()) {
-      setTimeout(() => {
-        gateView.classList.add('hide');
-        successView.classList.add('show');
-        if (CONFIG.REDIRECT_URL) {
-          setTimeout(() => { window.location.href = CONFIG.REDIRECT_URL; }, CONFIG.REDIRECT_DELAY);
-        }
-      }, 300);
-    }
-    return;
-  }
-
-  groupSolved[g] = false;
-
-  if ((hashes.minus && hash === hashes.minus) || (hashes.plus && hash === hashes.plus)) {
-    // Erreur de ±1 : indice ciblé, pas d'effacement ni de tremblement
-    groupEls[g].root.classList.add('near');
-    hintEl.textContent = CONFIG.NEAR_MISS_MESSAGE.replace('{label}', CONFIG.GROUPS[g].label.toLowerCase());
-    hintEl.className = 'error';
-    ledEl.className = 'led error';
+    setTimeout(() => {
+      gateView.classList.add('hide');
+      successView.classList.add('show');
+      if (CONFIG.REDIRECT_URL) {
+        setTimeout(() => { window.location.href = CONFIG.REDIRECT_URL; }, CONFIG.REDIRECT_DELAY);
+      }
+    }, 300);
   } else {
-    // Erreur franche : on efface ce groupe
     ledEl.className = 'led error';
-    shakeGroup(g);
-    hintEl.textContent = 'Code incorrect';
+    shakeAll();
+    hintEl.textContent = 'Date incorrecte';
     hintEl.className = 'error';
     setTimeout(() => {
-      a.value = '';
-      b.value = '';
-      a.focus();
-      if (!allSolved()) resetHint();
+      inputs.forEach(i => i.value = '');
+      inputs[0].focus();
+      resetHint();
     }, 550);
   }
 }
 
 inputs.forEach((inp, idx) => {
-  const groupIndex = Math.floor(idx / CHARS_PER_GROUP);
-
   inp.addEventListener('input', () => {
     inp.value = inp.value.slice(-1);
     if (inp.value && idx < inputs.length - 1) {
       inputs[idx + 1].focus();
     }
     if (hintEl.className === 'error') resetHint();
-    checkGroup(groupIndex);
+    tryValidate();
   });
 
   inp.addEventListener('keydown', (e) => {
@@ -594,14 +529,14 @@ inputs.forEach((inp, idx) => {
 
   inp.addEventListener('paste', (e) => {
     e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData).getData('text').trim();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
     if (!text) return;
     for (let i = 0; i < inputs.length; i++) {
       inputs[i].value = text[i] || '';
     }
     const last = Math.min(text.length, inputs.length) - 1;
     if (last >= 0) inputs[last].focus();
-    for (let g = 0; g < CONFIG.GROUPS.length; g++) checkGroup(g);
+    tryValidate();
   });
 });
 
